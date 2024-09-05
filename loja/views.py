@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
-from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido
+from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido,Cliente
 from .views import *
+import uuid 
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -13,6 +14,7 @@ def loja(request, nome_categoria=None):
         produtos = produtos.filter(categoria__nome=nome_categoria)
     context = {"produtos": produtos}
     return render(request, 'loja.html', context)
+    
 
 def verProduto(request, idProduto, idCor=None):
     temEstoque = False
@@ -54,20 +56,30 @@ def addCarrinho(request, idProduto):
         dados = request.POST.dict()
         tamanho = dados.get("tamanho")
         cor = dados.get("cor")
+
         if not tamanho:
             return redirect('loja')
+
+        resposta = redirect('carrinho')
+
         if request.user.is_authenticated:
             cliente = request.user.cliente
         else:
-            return redirect('loja')
+            idSessao = request.COOKIES.get("idSessao", str(uuid.uuid4()))
+            if not request.COOKIES.get("idSessao"):
+                resposta.set_cookie(key="idSessao", value=idSessao)
+            cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+
         pedido, criado = Pedido.objects.get_or_create(cliente=cliente, finalizado=False)
         itemEstoque = ItemEstoque.objects.get(produto__id=idProduto, tamanho=tamanho, cor__id=cor)
         itemPedido, _ = ItemPedido.objects.get_or_create(itemEstoque=itemEstoque, pedido=pedido)
-        itemPedido.quantidade = itemPedido.quantidade + 1
+        itemPedido.quantidade += 1
         itemPedido.save()
-        return redirect('carrinho')
+
+        return resposta
     else:
         return redirect('loja')
+
 
 
 
@@ -76,26 +88,40 @@ def removerCarrinho(request, idProduto):
         dados = request.POST.dict()
         tamanho = dados.get("tamanho")
         cor = dados.get("cor")
+
         if not tamanho:
             return redirect('loja')
+
+        resposta = redirect('carrinho')
+
         if request.user.is_authenticated:
             cliente = request.user.cliente
         else:
-            return redirect('loja')
+            idSessao = request.COOKIES.get("idSessao", str(uuid.uuid4()))
+            if not request.COOKIES.get("idSessao"):
+                resposta.set_cookie(key="idSessao", value=idSessao)
+            cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+
         pedido, criado = Pedido.objects.get_or_create(cliente=cliente, finalizado=False)
         itemEstoque = ItemEstoque.objects.get(produto__id=idProduto, tamanho=tamanho, cor__id=cor)
         itemPedido, _ = ItemPedido.objects.get_or_create(itemEstoque=itemEstoque, pedido=pedido)
         itemPedido.quantidade -= 1
         itemPedido.save()
-        if itemPedido.quantidade <= 0:
-            itemPedido.delete()
-        return redirect('carrinho')
+
+        return resposta
     else:
         return redirect('loja')
 
 def carrinho(request):
     if request.user.is_authenticated:
         cliente = request.user.cliente
+    else:
+        if request.COOKIES.get("idSessao"):
+            idSessao = request.COOKIES.get("idSessao")
+            cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+        else:
+            context = {"cliente": False, "itemPedido": None, "pedido": None}
+            return render(request, 'carrinho.html', context)            
     pedido, criado = Pedido.objects.get_or_create(cliente=cliente, finalizado=False)
     itemPedido = ItemPedido.objects.filter(pedido=pedido)
     context = {"itemPedido": itemPedido, "pedido": pedido}
