@@ -1,8 +1,20 @@
-{%extends 'base.html'%}
-{%load static%}
+{% extends 'base.html' %}
+{% load static %}
 
-{ % block body % }
-
+{% block body %}
 <h3>Checkout do Curinthia</h3>
+<h4>Número do Pedido: {{ pedido.id }}</h4>
+<h4>Preço Total: {{ pedido.precoTotal }}</h4>
+<h4>Total Produtos: {{ pedido.quantidadeTotal }}</h4>
 
-{ % endblock % }
+<h4>Endereços:</h4>
+<ul>
+    {% for end in endereco %}
+        <li>{{ end.rua }}, {{ end.cidade }}, {{ end.estado }}</li>
+    {% empty %}
+        <li>Nenhum endereço encontrado.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'carrinho' %}">Voltar para o carrinho</a>
+{% endblock %}
