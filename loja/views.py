@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido,Cliente
+from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido,Cliente,Endereco
 from .views import *
 import uuid 
 
@@ -129,4 +129,17 @@ def carrinho(request):
 
 
 def checkout(request):
-    return render(request, 'checkout.html')
+    if request.user.is_authenticated:
+        cliente = request.user.cliente
+    else:
+        if request.COOKIES.get("idSessao"):
+            idSessao = request.COOKIES.get("idSessao")
+            cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+        else:
+            return redirect('loja')
+            
+    pedido, criado = Pedido.objects.get_or_create(cliente=cliente, finalizado=False)
+    endereco = Endereco.objects.filter(cliente=cliente)
+    context = {"pedido": pedido, "endereco": endereco}
+    return render(request, 'checkout.html', context)
+
