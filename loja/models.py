@@ -8,9 +8,12 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=200,null=True, blank=True)
     idSessao = models.CharField(max_length=200)
     usuario = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
-
     def __str__(self):
-        return self.email
+        # Determine o valor a ser retornado
+        retorno = self.nome if self.nome else f"Cliente {self.id}"
+
+        print(f"__str__ output: {retorno}")
+
 
 class Categoria(models.Model):
     nome = models.CharField(max_length=200,null=True, blank=True)
