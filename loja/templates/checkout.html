@@ -2,19 +2,34 @@
 {% load static %}
 
 {% block body %}
-<h3>Checkout do Curinthia</h3>
-<h4>Número do Pedido: {{ pedido.id }}</h4>
-<h4>Preço Total: {{ pedido.precoTotal }}</h4>
-<h4>Total Produtos: {{ pedido.quantidadeTotal }}</h4>
 
-<h4>Endereços:</h4>
-<ul>
-    {% for end in endereco %}
-        <li>{{ end.rua }}, {{ end.cidade }}, {{ end.estado }}</li>
-    {% empty %}
-        <li>Nenhum endereço encontrado.</li>
+<h3>Checkout</h3>
+<a href="{% url 'carrinho' %}">Voltar para Carrinho</a>
+
+<h4>Número Pedido: {{ pedido.id }}</h4>
+<p>Preço Total Pedido: R${{ pedido.precoTotal }}</p>
+<p>Total Produtos: {{ pedido.quantidadeTotal }}</p>
+<a href="{% url 'adicionarEndereco' %}">Adicionar endereço de entrega</a>
+<form method="POST" action="">
+    {% csrf_token %}
+    <h3>Selecione o endereço de entrega:</h3>
+
+    {% for endereco in endereco %}
+        <input type="radio" name="endereco" value="{{ endereco.id }}">
+        <label for="{{ endereco.id }}">{{ endereco.cidade }}-{{endereco.estado}}, {{endereco.rua}},{{endereco.numero}}, {{endereco.complemento}} - {{endereco.cep}}</label>
+        <br>
     {% endfor %}
-</ul>
 
-<a href="{% url 'carrinho' %}">Voltar para o carrinho</a>
+
+<input type="hidden" value="{{pedido.precoTotal}} name = total"> 
+<br>
+<button type="submit">Finalizar Pedido R${{pedido.precoTotal}}</button>
+<br>
+{%if not request.user.is_authenticated %}  
+
+<h4>Preencha seu email</h4> 
+<input type="email" name="email" placeholder="email">
+{% endif %}
+</form>
+
 {% endblock %}

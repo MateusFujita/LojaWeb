@@ -11,7 +11,7 @@ def homepage(request):
 def loja(request, nome_categoria=None):
     produtos = Produto.objects.filter(ativo=True)
     if nome_categoria:
-        produtos = produtos.filter(categoria__nome=nome_categoria)
+        produtos = produtos.filter(categoria__slug=nome_categoria)
     context = {"produtos": produtos}
     return render(request, 'loja.html', context)
     
@@ -142,4 +142,33 @@ def checkout(request):
     endereco = Endereco.objects.filter(cliente=cliente)
     context = {"pedido": pedido, "endereco": endereco}
     return render(request, 'checkout.html', context)
+
+def adicionarEndereco(request):
+    if request.user.is_authenticated:
+        cliente = request.user.cliente
+    else:
+        if request.COOKIES.get("idSessao"):
+            idSessao = request.COOKIES.get("idSessao")
+            cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+        else:
+            return redirect("loja")
+
+    if request.method == "POST":
+        dados = request.POST.dict()
+        endereco = Endereco.objects.create(
+            cliente=cliente,
+            rua=dados.get("rua"),
+            numero=int(dados.get("numero")),  
+            estado=dados.get("estado"),
+            cidade=dados.get("cidade"),
+            cep=dados.get("cep"),
+            complemento=dados.get("complemento")           
+
+        )
+        endereco.save()
+
+        return redirect("checkout")
+    else:
+        return render(request, 'adicionarEndereco.html')
+
 

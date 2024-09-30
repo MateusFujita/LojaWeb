@@ -9,3 +9,18 @@
     {{quantidadeProdutosCarrinho}}
 
 </nav>
+
+
+    <div style="display:flex;">
+        {% for categoria in categorias %}
+        <div>
+            <a href="{% url 'loja' %}{{categoria.slug}}">{{categoria.nome}}:</a>
+            <br>
+            {% for tipo in tipos %}
+            <a href="{% url 'loja' %}{{categoria.slug}}-{{tipo.nome}}">{{tipo.slug}}</a>
+            {% endfor %}         
+        </div>
+        {% endfor %}
+
+
+    </div>

@@ -3,30 +3,32 @@ from django.contrib.auth.models import User
 
 #Cliente
 class Cliente(models.Model):
-    nome = models.CharField(max_length=200,null=True, blank=True)
-    email = models.CharField(max_length=200,null=True, blank=True)
-    telefone = models.CharField(max_length=200,null=True, blank=True)
+    nome = models.CharField(max_length=200, null=True, blank=True)
+    email = models.CharField(max_length=200, null=True, blank=True)
+    telefone = models.CharField(max_length=200, null=True, blank=True)
     idSessao = models.CharField(max_length=200)
     usuario = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+
     def __str__(self):
         # Determine o valor a ser retornado
         retorno = self.nome if self.nome else f"Cliente {self.id}"
-
-        print(f"__str__ output: {retorno}")
+        return retorno  # Corrigido para retornar uma string
 
 
 class Categoria(models.Model):
     nome = models.CharField(max_length=200,null=True, blank=True)
+    slug = models.CharField(max_length=200,null=True, blank=True)
 
     def __str__(self):
         return self.nome
 
 class Tipo(models.Model):
     nome = models.CharField(max_length=200,null=True, blank=True)
+    slug = models.CharField(max_length=200,null=True, blank=True)
     
     def __str__(self):
         return self.nome
-    
+
 class Produto(models.Model):
     imagem = models.ImageField()
     nome = models.CharField(max_length=200,null=True, blank=True)
@@ -58,16 +60,13 @@ class ItemEstoque(models.Model):
     
 class Endereco(models.Model):
     rua = models.CharField(max_length=200,null=True, blank=True)
-    numero = models.IntegerField(default=0)
+    numero = models.IntegerField(default=000)
     complemento = models.CharField(max_length=200,null=True)
     cep = models.CharField(max_length=200,null=True, blank=True)
     cidade = models.CharField(max_length=200,null=True, blank=True)
     estado = models.CharField(max_length=200,null=True, blank = True)
     cliente = models.ForeignKey(Cliente, null=True, blank=True,on_delete=models.SET_NULL)
     
-    def __str__(self):
-        return self.nome
-
 
 class Pedido(models.Model):
     cliente = models.ForeignKey(Cliente, null=True, blank=True,on_delete=models.SET_NULL)
@@ -110,3 +109,5 @@ class Banner(models.Model):
 
     def __str__(self):
         return self.linkDestino 
+    
+
