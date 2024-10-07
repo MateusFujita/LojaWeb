@@ -5,6 +5,35 @@
 
 <h3>Lojinha</h3>
 
+<form method="POST" action="">
+    <p>Preço</p>
+    <label for="precoMinimo">Preço Mínimo:</label>
+    <input type="number" id="precoMinimo" name="precoMinimo" value="precoMinimo">
+
+    <label for="precoMaximo">Preço Máximo:</label>
+    <input type="number" id="precoMaximo" name="precoMaximo" value="precoMaximo">
+
+    <p>Tamanho</p>
+    {% for tamanho in tamanhos %}
+    <input type="radio" id="tamanho_{{ tamanho }}" name="tamanho" value="{{ tamanho }}">
+    <label for="tamanho_{{ tamanho }}">{{ tamanho }}</label>
+    {% endfor %}
+
+    <p>Categoria</p>
+        {% for categoria in categorias %}
+        <input type="radio" name="categoria" value="{{ categoria.slug}}">
+        <label for="{{categoria.slug}}">{{categoria.nome}}</label>
+
+        {% endfor %}
+    
+    <p>Tipo</p>
+    {% for tipo in tipos %}
+    <input type="radio" name="tipo" value="{{ tipo.slug }}">
+    <label for="{{tipo.slug}}">{{tipo.nome}}</label>
+    {% endfor %}
+
+    <button type="submit">Aplicar Filtros</button>
+</form>
 
 {%for produto in produtos%}
 <a href="{% url 'verProduto' produto.id %}">
