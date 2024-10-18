@@ -6,12 +6,19 @@
 <h3>Lojinha</h3>
 
 <form method="POST" action="">
+    {% csrf_token %}
     <p>Preço</p>
-    <label for="precoMinimo">Preço Mínimo:</label>
-    <input type="number" id="precoMinimo" name="precoMinimo" value="precoMinimo">
 
+    <label for="precoMinimo">Preço Mínimo:</label>
+    <input type="number" step="0.01" id="precoMinimo" name="precoMinimo" value="{{ minimo|stringformat:'0.2f'|default_if_none:'' }}">
     <label for="precoMaximo">Preço Máximo:</label>
-    <input type="number" id="precoMaximo" name="precoMaximo" value="precoMaximo">
+    <input type="number" step="0.01" id="precoMaximo" name="precoMaximo" value="{{ maximo|stringformat:'0.2f'|default_if_none:'' }}">
+    
+
+</form>
+
+
+
 
     <p>Tamanho</p>
     {% for tamanho in tamanhos %}
@@ -35,13 +42,14 @@
     <button type="submit">Aplicar Filtros</button>
 </form>
 
+<div>
 {%for produto in produtos%}
 <a href="{% url 'verProduto' produto.id %}">
 <img src="{{produto.imagem.url}}" width="300" height="450">
 </a>
 <p>Produto:{{produto.nome}}</p>
 <p>Preço:{{produto.preco}}</p>
-
+</div>
 
 
 {%endfor%}

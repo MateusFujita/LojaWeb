@@ -3,23 +3,42 @@ from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido,Client
 from .views import *
 import uuid 
 from .utils import filtrarProdutos
+from django.db.models import Min, Max
+from decimal import Decimal
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
     context = {"banners": banners}
     return render(request, 'homepage.html', context)
 
+
 def loja(request, filtro=None):
     produtos = Produto.objects.filter(ativo=True)
     produtos = filtrarProdutos(produtos, filtro)
-    tamanhos = []
-    minimo = 0
-    maximo = 1000
-    context = {"produtos": produtos, "minimo": minimo, "maximo": maximo, "tamanhos": tamanhos}
+    tamanhos = ["P", "M", "G"]
+
+    minimo = None
+    maximo = None
+
+    if produtos.exists():  # Verifica se existem produtos
+        minimo = list(produtos.aggregate(Min('preco')).values())[0]
+        maximo = list(produtos.aggregate(Max('preco')).values())[0]
+
+        # Convertendo para Decimal com duas casas decimais
+        minimo = Decimal(minimo).quantize(Decimal("0.01")) if minimo else None
+        maximo = Decimal(maximo).quantize(Decimal("0.01")) if maximo else None
+    
+    print(f"Minimo: {minimo}, Maximo: {maximo}")
+
+    context = {
+        "produtos": produtos,
+        "minimo": minimo,
+        "maximo": maximo,
+        "tamanhos": tamanhos
+    }
     return render(request, "loja.html", context)
 
     
-
 def verProduto(request, idProduto, idCor=None):
     temEstoque = False
     cores = {}
@@ -49,11 +68,14 @@ def verProduto(request, idProduto, idCor=None):
     }
     return render(request, "verProduto.html", context)
 
+
 def minhaconta(request):
     return render(request, 'usuarios/minhaconta.html')
 
+
 def login(request):
     return render(request, 'usuarios/login.html')
+
 
 def removerCarrinho(request, idProduto):
     if request.method == "POST" and idProduto:
@@ -120,7 +142,6 @@ def addCarrinho(request, idProduto):
         return redirect('loja')
 
 
-
 def carrinho(request):
     if request.user.is_authenticated:
         cliente = request.user.cliente
@@ -151,6 +172,7 @@ def checkout(request):
     endereco = Endereco.objects.filter(cliente=cliente)
     context = {"pedido": pedido, "endereco": endereco}
     return render(request, 'checkout.html', context)
+
 
 def adicionarEndereco(request):
     if request.user.is_authenticated:
