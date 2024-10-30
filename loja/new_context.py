@@ -17,6 +17,6 @@ def carrinho(request):
     return {"quantidadeProdutosCarrinho": quantidadeProdutosCarrinho}
 
 def categoriasTipo(request):
-    categorias = Categoria.objects.all()
-    tipos = Tipo.objects.all()
-    return {"categorias": categorias, "tipos": tipos}
+    categoriasBarra = Categoria.objects.all()
+    tiposBarra = Tipo.objects.all()
+    return {"categoriasBarra": categoriasBarra, "tiposBarra": tiposBarra}

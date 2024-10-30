@@ -14,31 +14,23 @@
     <label for="precoMaximo">Preço Máximo:</label>
     <input type="number" step="0.01" id="precoMaximo" name="precoMaximo" value="{{ maximo|stringformat:'0.2f'|default_if_none:'' }}">
     
-
-</form>
-
-
-
-
     <p>Tamanho</p>
     {% for tamanho in tamanhos %}
-    <input type="radio" id="tamanho_{{ tamanho }}" name="tamanho" value="{{ tamanho }}">
-    <label for="tamanho_{{ tamanho }}">{{ tamanho }}</label>
+    <input type="radio" name="tamanho" value="{{ tamanho }}">
+    <label for="{{ tamanho }}">{{ tamanho }}</label>
     {% endfor %}
 
     <p>Categoria</p>
-        {% for categoria in categorias %}
-        <input type="radio" name="categoria" value="{{ categoria.slug}}">
-        <label for="{{categoria.slug}}">{{categoria.nome}}</label>
+    {% for categoria in categorias %}
+    <input type="radio" name="categoria" value="{{ categoria.slug }}">
+    <label for="{{ categoria.slug }}">{{ categoria.nome }}</label>
+    {% endfor %}
 
-        {% endfor %}
-    
     <p>Tipo</p>
     {% for tipo in tipos %}
     <input type="radio" name="tipo" value="{{ tipo.slug }}">
-    <label for="{{tipo.slug}}">{{tipo.nome}}</label>
+    <label for="{{ tipo.slug }}">{{ tipo.nome }}</label>
     {% endfor %}
-
     <button type="submit">Aplicar Filtros</button>
 </form>
 
