@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from .models import Banner, Produto, ItemEstoque, Cor, Pedido, ItemPedido,Cliente,Endereco,Categoria
+from .models import *
 from .views import *
 import uuid 
 from .utils import *
@@ -15,25 +15,26 @@ def homepage(request):
 def loja(request, filtro=None):
     produtos = Produto.objects.filter(ativo=True)
     produtos = filtrarProdutos(produtos, filtro)
+    # aplicar os filtros do formulário
     if request.method == "POST":
         dados = request.POST.dict()
-        print(dados)
-        produtos = produtos.filter(preco__gte=dados.get("precoMinimo"), preco__lte=dados.get("precoMaximo"))
+        produtos = produtos.filter(preco__gte=dados.get("preco_minimo"), preco__lte=dados.get("preco_maximo"))
         if "tamanho" in dados:
             itens = ItemEstoque.objects.filter(produto__in=produtos, tamanho=dados.get("tamanho"))
-            idsProdutos = itens.values_list("produto", flat=True).distinct()
-            produtos = produtos.filter(id__in=idsProdutos)
+            ids_produtos = itens.values_list("produto", flat=True).distinct()
+            produtos = produtos.filter(id__in=ids_produtos)
         if "tipo" in dados:
-            produtos = produtos.filter(tipo__slug = dados.get("tipo"))
+            produtos = produtos.filter(tipo__slug=dados.get("tipo"))
         if "categoria" in dados:
-            produtos = produtos.filter(categoria__slug = dados.get("categoria"))
+            produtos = produtos.filter(categoria__slug=dados.get("categoria"))
 
     itens = ItemEstoque.objects.filter(quantidade__gt=0, produto__in=produtos)
     tamanhos = itens.values_list("tamanho", flat=True).distinct()
+    ids_categorias = produtos.values_list("categoria", flat=True).distinct()
+    categorias = Categoria.objects.filter(id__in=ids_categorias)
     minimo, maximo = precoMaximoMinimo(produtos)
-    idCategoria= produtos.values_list("categoria", flat=True).distinct()
-    categorias = Categoria.objects.filter(id__in= idCategoria)
-    context = {"produtos": produtos, "minimo": minimo, "maximo": maximo, "tamanhos": tamanhos, "categorias":categorias}
+    context = {"produtos": produtos, "minimo": minimo, "maximo": maximo, "tamanhos": tamanhos, 
+               "categorias": categorias}
     return render(request, 'loja.html', context)
     
 def verProduto(request, idProduto, idCor=None):
