@@ -15,7 +15,6 @@ def homepage(request):
 def loja(request, filtro=None):
     produtos = Produto.objects.filter(ativo=True)
     produtos = filtrarProdutos(produtos, filtro)
-    # aplicar os filtros do formulário
     if request.method == "POST":
         dados = request.POST.dict()
         produtos = produtos.filter(preco__gte=dados.get("preco_minimo"), preco__lte=dados.get("preco_maximo"))
@@ -28,6 +27,9 @@ def loja(request, filtro=None):
         if "categoria" in dados:
             produtos = produtos.filter(categoria__slug=dados.get("categoria"))
 
+    
+    ordem = request.GET.get("ordem","menorPreco")
+    produtos = ordenarProdutos(produtos,ordem)
     itens = ItemEstoque.objects.filter(quantidade__gt=0, produto__in=produtos)
     tamanhos = itens.values_list("tamanho", flat=True).distinct()
     ids_categorias = produtos.values_list("categoria", flat=True).distinct()
