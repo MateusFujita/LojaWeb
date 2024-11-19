@@ -16,7 +16,7 @@ urlpatterns = [
 
     path('usuarios/minhaconta', minhaconta, name='minhaconta'),
     path('usuarios/fazerLogin', fazerLogin, name='fazerLogin'),
-    path('criarConta/', criarConta, name='criarConta'),
+    path('usuarios/criarConta', criarConta, name='criarConta'),
 ]
 
 

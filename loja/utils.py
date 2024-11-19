@@ -1,4 +1,5 @@
 from django.db.models import Max, Min
+from django.db.models import Case, When
 
 def filtrarProdutos(produtos, filtro):
     if filtro:
@@ -22,8 +23,6 @@ def precoMaximoMinimo(produtos):
         minimo = list(produtos.aggregate(Min("preco")).values())[0]
         minimo = round(minimo, 2)
     return minimo, maximo
-
-from django.db.models import Case, When
 
 def ordenarProdutos(produtos, ordem):
     if ordem == "menorPreco":

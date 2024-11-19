@@ -5,12 +5,14 @@
 
 <h3>Criar Conta!</h3>
 
-<form method="post" action="% url 'criarConta' %">
+{{erro}}
+
+<form method="post" action="{% url 'criarConta' %}">
     {% csrf_token %}
 
     <input type="email" name="email" placeholder="Email">
-    <input type="password" name="password" placeholder="Senha">
-    <input type="password" name="passwordAgain" placeholder="Confirmar senha">
+    <input type="password" name="senha" placeholder="Senha">
+    <input type="password" name="confirmacaoSenha" placeholder="Confirmar senha">
 
     <button type="submit">Criar Conta</button>
 </form>

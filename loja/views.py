@@ -6,6 +6,9 @@ from .utils import *
 from django.db.models import Min, Max
 from decimal import Decimal
 from django.contrib.auth import login,logout, authenticate
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
+
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -71,6 +74,7 @@ def verProduto(request, idProduto, idCor=None):
 
 
 def minhaconta(request):
+
     return render(request, 'usuarios/minhaconta.html')
 
 
@@ -103,15 +107,42 @@ def criarConta(request):
         return redirect("loja")
     if request.method == "POST":
         dados = request.POST.dict()
+        print("Dados recebidos:", dados)  # Adicionado para depuração
         if "email" in dados and "senha" in dados and "confirmacaoSenha" in dados:
             email = dados.get("email")
             senha = dados.get("senha")
             confirmacaoSenha = dados.get("confirmacaoSenha")
+            try:
+                validate_email(email)
+            except:
+                erro = "emailInvalido"
+            if senha == confirmacaoSenha:
+                usuario, criado = User.objects.get_or_create(username=email, email=email)
+                if not criado:
+                    erro = "usuarioExistente"
+                else:
+                    usuario.set_password(senha)
+                    usuario.save()
+                    usuario = authenticate(request, username=email, password=senha)
+                    login(request, usuario)
 
-        else: 
+                if request.COOKIES.get("idSessao"):
+                    idSessao = request.COOKIES.get("idSessao")
+                    cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+                else:
+                    cliente, criado = Cliente.objects.get_or_create(email=email)
+                cliente.usuario = usuario
+                cliente.email = email
+                cliente.save()
+                return redirect("loja")
+            else:
+                erro = "senhaInvalida"
+        else:
             erro = "preenchimento"
+    context = {"erro": erro}
+    return render(request, "usuarios/criarConta.html", context)
 
-    return render(request,"usuarios/criarConta.html")
+
 
 
 def removerCarrinho(request, idProduto):
