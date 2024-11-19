@@ -5,6 +5,7 @@ import uuid
 from .utils import *
 from django.db.models import Min, Max
 from decimal import Decimal
+from django.contrib.auth import login,logout, authenticate
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -17,7 +18,7 @@ def loja(request, filtro=None):
     produtos = filtrarProdutos(produtos, filtro)
     if request.method == "POST":
         dados = request.POST.dict()
-        produtos = produtos.filter(preco__gte=dados.get("preco_minimo"), preco__lte=dados.get("preco_maximo"))
+        produtos = produtos.filter(preco__gte=dados.get("precoMinimo"), preco__lte=dados.get("precoMaximo"))
         if "tamanho" in dados:
             itens = ItemEstoque.objects.filter(produto__in=produtos, tamanho=dados.get("tamanho"))
             ids_produtos = itens.values_list("produto", flat=True).distinct()
@@ -73,8 +74,44 @@ def minhaconta(request):
     return render(request, 'usuarios/minhaconta.html')
 
 
-def login(request):
-    return render(request, 'usuarios/login.html')
+def fazerLogin(request):     
+    erro = False     
+    if request.user.is_authenticated:         
+        return redirect('loja')     
+    if request.method == "POST":         
+        dados = request.POST.dict()         
+        if "email" in dados and "senha" in dados:         
+            email = dados.get("email")             
+            senha = dados.get("senha")
+            print(dados)         
+            usuario = authenticate(request, username=email, password=senha)  
+            if usuario:                 
+                login(request, usuario)                 
+                return redirect("loja")             
+            else:                 
+                erro = True         
+        else:             
+            erro = True 
+    context = {"erro": erro}     
+    return render(request, 'usuarios/fazerLogin.html', context)
+
+
+
+def criarConta(request):
+    erro = None
+    if request.user.is_authenticated:
+        return redirect("loja")
+    if request.method == "POST":
+        dados = request.POST.dict()
+        if "email" in dados and "senha" in dados and "confirmacaoSenha" in dados:
+            email = dados.get("email")
+            senha = dados.get("senha")
+            confirmacaoSenha = dados.get("confirmacaoSenha")
+
+        else: 
+            erro = "preenchimento"
+
+    return render(request,"usuarios/criarConta.html")
 
 
 def removerCarrinho(request, idProduto):

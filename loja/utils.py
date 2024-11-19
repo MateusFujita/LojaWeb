@@ -23,17 +23,25 @@ def precoMaximoMinimo(produtos):
         minimo = round(minimo, 2)
     return minimo, maximo
 
+from django.db.models import Case, When
+
 def ordenarProdutos(produtos, ordem):
     if ordem == "menorPreco":
         produtos = produtos.order_by("preco")
     elif ordem == "maiorPreco":
         produtos = produtos.order_by("-preco")
     elif ordem == "maisVendidos":
-        listaProdutos = []
-        for produto in produtos:
-            listaProdutos.append((produto.totalVendas(),produto))
-        listaProdutos = sorted(listaProdutos, reverse=True)
+        listaProdutos = [(produto.totalVendas(), produto.id) for produto in produtos]
+        listaProdutos = sorted(listaProdutos, key=lambda x: x[0], reverse=True)
+        ordenacao_ids = [produto_id for _, produto_id in listaProdutos]
         print(listaProdutos)
+        print(ordenacao_ids)
+
+
+        # Cria uma ordenação baseada nos IDs dos produtos mais vendidos
+        preserva_ordem = Case(*[When(id=pk, then=pos) for pos, pk in enumerate(ordenacao_ids)])
+        produtos = produtos.filter(id__in=ordenacao_ids).order_by(preserva_ordem)
+        
     return produtos
 
 
