@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<h3>Meus Pedidos</h3>
+
+<a href="{% url 'meusPedidos' %}">Minha Conta</a>
+<p>-----------------------------------------------------------------------------------------------------------</p>
+
+{% for pedido in pedidos %}
+    <div>
+        <p>Pedido ID: {{ pedido.id }}</p>
+        <p>Preço Total: {{ pedido.precoTotal }}</p>
+        <p>Data: {{ pedido.dataFinalizacao }}</p>
+        <p>Endereço: Rua {{ pedido.endereco.rua }}, Número {{ pedido.endereco.numero }}, 
+           Cidade {{ pedido.endereco.cidade }}, CEP {{ pedido.endereco.cep }}</p>
+
+        <p>Itens do Pedido:</p>
+        {% for item in pedido.itens %}
+            <img src="{{ item.itemEstoque.produto.imagem.url }}" width="50" height="75">
+            <p>Nome: {{ item.itemEstoque.produto.nome }}</p>
+            <p>Quantidade: {{ item.quantidade }}</p>
+            <p>Preço Total: {{ item.precoTotal }}</p>
+
+        {% endfor %}
+        <p>-----------------------------------------------------------------------------------------------------------</p>        
+    </div>
+{% empty %}
+    <p>Você ainda não tem pedidos finalizados.</p>
+{% endfor %}
+
+{% endblock %}

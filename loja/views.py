@@ -8,7 +8,7 @@ from decimal import Decimal
 from django.contrib.auth import login,logout, authenticate
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
+from django.contrib.auth.decorators import login_required
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -72,10 +72,19 @@ def verProduto(request, idProduto, idCor=None):
     }
     return render(request, "verProduto.html", context)
 
-
+@login_required
 def minhaconta(request):
 
     return render(request, 'usuarios/minhaconta.html')
+
+@login_required
+def meusPedidos(request):
+    cliente = request.user.cliente
+    pedidos = Pedido.objects.filter(finalizado=True, cliente=cliente).order_by("-dataFinalizacao")
+
+
+    context = {"pedidos":pedidos}
+    return render(request, 'usuarios/meusPedidos.html', context)
 
 
 def fazerLogin(request):     
@@ -99,24 +108,33 @@ def fazerLogin(request):
     context = {"erro": erro}     
     return render(request, 'usuarios/fazerLogin.html', context)
 
-
-
 def criarConta(request):
     erro = None
     if request.user.is_authenticated:
         return redirect("loja")
+
     if request.method == "POST":
         dados = request.POST.dict()
-        print("Dados recebidos:", dados)  # Adicionado para depuração
+        print("Dados recebidos:", dados)  # Para depuração, pode remover depois
+
+        # Verificando se os campos essenciais estão presentes
         if "email" in dados and "senha" in dados and "confirmacaoSenha" in dados:
-            email = dados.get("email")
-            senha = dados.get("senha")
-            confirmacaoSenha = dados.get("confirmacaoSenha")
+            email = dados["email"]
+            senha = dados["senha"]
+            confirmacaoSenha = dados["confirmacaoSenha"]
+
+            # Validação do email
             try:
                 validate_email(email)
-            except:
+            except ValidationError:
                 erro = "emailInvalido"
-            if senha == confirmacaoSenha:
+            
+            # Verificando se as senhas são iguais
+            if senha != confirmacaoSenha:
+                erro = "senhaInvalida"
+            
+            # Se não houver erro de email ou senha, criamos o usuário
+            if erro is None:
                 usuario, criado = User.objects.get_or_create(username=email, email=email)
                 if not criado:
                     erro = "usuarioExistente"
@@ -126,24 +144,28 @@ def criarConta(request):
                     usuario = authenticate(request, username=email, password=senha)
                     login(request, usuario)
 
-                if request.COOKIES.get("idSessao"):
+                    # Verificando a sessão do cliente
                     idSessao = request.COOKIES.get("idSessao")
-                    cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
-                else:
-                    cliente, criado = Cliente.objects.get_or_create(email=email)
-                cliente.usuario = usuario
-                cliente.email = email
-                cliente.save()
-                return redirect("loja")
-            else:
-                erro = "senhaInvalida"
+                    if idSessao:
+                        cliente, criado = Cliente.objects.get_or_create(idSessao=idSessao)
+                    else:
+                        cliente, criado = Cliente.objects.get_or_create(email=email)
+                    
+                    cliente.usuario = usuario
+                    cliente.email = email
+                    cliente.save()
+
+                    return redirect("loja")
         else:
             erro = "preenchimento"
+
     context = {"erro": erro}
     return render(request, "usuarios/criarConta.html", context)
 
-
-
+@login_required
+def fazerLogout(request):
+    logout(request)
+    return redirect("fazerLogin")
 
 def removerCarrinho(request, idProduto):
     if request.method == "POST" and idProduto:

@@ -8,6 +8,8 @@ class Cliente(models.Model):
     telefone = models.CharField(max_length=200, null=True, blank=True)
     idSessao = models.CharField(max_length=200)
     usuario = models.OneToOneField(User, null=True, blank=True, on_delete=models.CASCADE)
+    
+
 
     def __str__(self):
         # Determine o valor a ser retornado
@@ -94,6 +96,11 @@ class Pedido(models.Model):
         itemPedido = ItemPedido.objects.filter(pedido__id = self.id)
         preco = sum([item.precoTotal for item in itemPedido])
         return preco
+    
+    def itens(self):
+        itemPedido = ItemPedido.objects.filter(pedido__id = self.id)
+        return itemPedido
+
     
         
 class ItemPedido(models.Model):
