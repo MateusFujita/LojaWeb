@@ -15,6 +15,53 @@ def homepage(request):
     context = {"banners": banners}
     return render(request, 'homepage.html', context)
 
+def minhaConta(request):
+    erro = None
+    alterado = False
+
+    if request.method == "POST":
+        dados = request.POST.dict()
+        if "senhaAtual" in dados:
+            # Modificação de senha
+            senhaAtual = dados.get("senhaAtual")
+            novaSenha = dados.get("novaSenha")
+            senhaConfirmacao = dados.get("senhaConfirmacao")
+
+            if novaSenha == senhaConfirmacao:
+                usuario = authenticate(request, username=request.user.email, password=senhaAtual)
+                if usuario:
+                    usuario.set_password(novaSenha)
+                    usuario.save()
+                    alterado = True
+                else:
+                    erro = "senha_incorreta"
+            else:
+                erro = "senhas_diferentes"
+
+        elif "email" in dados:
+            # Modificação de dados pessoais
+            email = dados.get("email")
+            telefone = dados.get("telefone")
+            nome = dados.get("nome")
+
+            if email != request.user.email:
+                if User.objects.filter(email=email).exists():
+                    erro = "email_existente"
+
+            if not erro:
+                cliente = request.user.cliente
+                cliente.email = email
+                cliente.nome = nome
+                cliente.telefone = telefone
+                cliente.save()
+                request.user.email = email
+                request.user.save()
+                alterado = True
+        else:
+            erro = "formulario_invalido"
+
+    context = {"erro": erro, "alterado": alterado}
+    return render(request, "usuarios/minhaConta.html", context)
 
 def loja(request, filtro=None):
     produtos = Produto.objects.filter(ativo=True)

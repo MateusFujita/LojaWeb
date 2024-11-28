@@ -20,6 +20,7 @@ urlpatterns = [
     path('usuarios/criarConta', criarConta, name='criarConta'),
     path('usuarios/fazerLogout', fazerLogout, name='fazerLogout'),
     path('usuarios/meusPedidos', meusPedidos, name='meusPedidos'),
+    path('usuarios/minhaConta', minhaConta, name='minhaConta'),
 
 
 #URL DO ALTERAR SENHA
