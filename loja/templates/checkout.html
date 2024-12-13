@@ -9,27 +9,45 @@
 <h4>Número Pedido: {{ pedido.id }}</h4>
 <p>Preço Total Pedido: R${{ pedido.precoTotal }}</p>
 <p>Total Produtos: {{ pedido.quantidadeTotal }}</p>
-<a href="{% url 'adicionarEndereco' %}">Adicionar endereço de entrega</a>
-<form method="POST" action="">
-    {% csrf_token %}
-    <h3>Selecione o endereço de entrega:</h3>
 
-    {% for endereco in endereco %}
-        <input type="radio" name="endereco" value="{{ endereco.id }}">
-        <label for="{{ endereco.id }}">{{ endereco.cidade }}-{{endereco.estado}}, {{endereco.rua}},{{endereco.numero}}, {{endereco.complemento}} - {{endereco.cep}}</label>
-        <br>
+{% if erro %}
+
+    {% if erro == "preco" %}
+        <p>Preço dos produtos errados, tente novamente ou volte para o carrinho</p>
+    {% endif %}
+
+    {% if erro == "endereco" %}
+        <p>Selecione um endereço de entrega para continuar</p>
+    {% endif %}
+
+    {% if erro == "email" %}
+        <p>Preencha um e-mail para podermos confirmar sua compra</p>
+    {% endif %}
+{% endif %}
+
+<form method="POST" action="{% url 'finalizarPedido' pedido.id %}">
+    {% csrf_token %}
+    <h3>Selecione o endereço de entrega</h3>
+    <a href="{% url 'adicionarEndereco' %}">Adicionar endereço de entrega</a>
+    <br>
+    {% for endereco in enderecos %}
+    <input type="radio" name="endereco" value="{{ endereco.id }}">
+    <label for="{{ endereco.id }}">{{ endereco.cidade }}-{{ endereco.estado }}, 
+        {{ endereco.rua }}, 
+        {{ endereco.numero }}, 
+        {{ endereco.complemento }} - {{ endereco.cep}}</label>
+    <br>
     {% endfor %}
 
-
-<input type="hidden" value="{{pedido.precoTotal}} name = total"> 
-<br>
-<button type="submit">Finalizar Pedido R${{pedido.precoTotal}}</button>
-<br>
-{%if not request.user.is_authenticated %}  
-
-<h4>Preencha seu email</h4> 
-<input type="email" name="email" placeholder="email">
-{% endif %}
+    {% if not request.user.is_authenticated %}
+    <hr>
+    <h4>Preencha seu email para finalizar o pedido</h4>
+    <input type="email" name="email" placeholder="email">
+    {% endif %}
+    <hr>
+    <input type="hidden" value="{{ pedido.precoTotal }}" name="total">
+    <button type="submit">Finalizar Pedido - R${{ pedido.precoTotal }}</button>
 </form>
+
 
 {% endblock %}

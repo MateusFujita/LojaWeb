@@ -21,6 +21,8 @@ urlpatterns = [
     path('usuarios/fazerLogout', fazerLogout, name='fazerLogout'),
     path('usuarios/meusPedidos', meusPedidos, name='meusPedidos'),
     path('usuarios/minhaConta', minhaConta, name='minhaConta'),
+    path('finalizarPedido/<int:idPedido>/', finalizarPedido, name='finalizarPedido'),
+
 
 
 #URL DO ALTERAR SENHA

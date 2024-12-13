@@ -9,6 +9,8 @@ from django.contrib.auth import login,logout, authenticate
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
+from datetime import *
+from django.shortcuts import get_object_or_404, redirect, render
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -309,6 +311,67 @@ def checkout(request):
     endereco = Endereco.objects.filter(cliente=cliente)
     context = {"pedido": pedido, "endereco": endereco}
     return render(request, 'checkout.html', context)
+
+
+
+def finalizarPedido(request, idPedido):
+    if request.method == "POST":
+        erro = None
+        dados = request.POST.dict()
+
+        # Busca o pedido pelo ID
+        pedido = get_object_or_404(Pedido, id=idPedido)
+
+        # Valida o total
+        total = dados.get("total")
+        if total != pedido.precoTotal:
+            erro = "preco"
+
+        # Valida o endereço
+        endereco_id = dados.get("endereco")
+        if not endereco_id:
+            erro = "endereco"
+        else:
+            try:
+                # Busca a instância do Endereco pelo ID
+                endereco = Endereco.objects.get(id=endereco_id)
+                pedido.endereco = endereco  # Atribui corretamente a instância
+            except Endereco.DoesNotExist:
+                erro = "endereco_invalido"
+
+        # Valida o cliente (caso não esteja autenticado)
+        if not request.user.is_authenticated:
+            email = dados.get("email")
+            try:
+                validate_email(email)
+            except ValidationError:
+                erro = "email"
+            if not erro:
+                # Busca ou cria um cliente associado ao email
+                cliente = Cliente.objects.filter(email=email).first()
+                if cliente:
+                    pedido.cliente = cliente
+                else:
+                    cliente = Cliente(email=email)
+                    cliente.save()
+                    pedido.cliente = cliente
+
+        # Define o código de transação
+        codigoTransacao = f"{pedido.id}-{datetime.now().timestamp()}"
+        pedido.codigoTransacao = codigoTransacao
+
+        # Salva o pedido ou retorna erro
+        if erro:
+            enderecos = Endereco.objects.filter(cliente=pedido.cliente)
+            context = {"erro": erro, "pedido": pedido, "enderecos": enderecos}
+            return render(request, "checkout.html", context)
+
+        pedido.save()
+        # TODO: Implementar a lógica de pagamento
+        return redirect("checkout", erro)
+
+    # Redireciona para a loja se não for uma requisição POST
+    return redirect("loja")
 
 
 def adicionarEndereco(request):

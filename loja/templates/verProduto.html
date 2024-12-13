@@ -22,6 +22,7 @@ Cor: {{ corSelecionada.nome }}
 </a>
 {% endfor %}
 
+
 {% if tamanhos %}
 <form method="POST" action="{% url 'addCarrinho' produto.id %}">
     {% csrf_token %}
