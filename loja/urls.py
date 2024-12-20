@@ -14,6 +14,9 @@ urlpatterns = [
     path('checkout/', checkout, name='checkout'),
     path('removerCarrinho/<int:idProduto>/', removerCarrinho, name='removerCarrinho'),
     path('adicionarEndereco/', adicionarEndereco, name='adicionarEndereco'),
+    path('finalizarPedido/<int:idPedido>/', finalizarPedido, name='finalizarPedido'),
+    path('finalizar_pagamento/', finalizar_pagamento, name='finalizar_pagamento'),
+
 
     path('usuarios/minhaconta', minhaconta, name='minhaconta'),
     path('usuarios/fazerLogin', fazerLogin, name='fazerLogin'),
@@ -21,7 +24,7 @@ urlpatterns = [
     path('usuarios/fazerLogout', fazerLogout, name='fazerLogout'),
     path('usuarios/meusPedidos', meusPedidos, name='meusPedidos'),
     path('usuarios/minhaConta', minhaConta, name='minhaConta'),
-    path('finalizarPedido/<int:idPedido>/', finalizarPedido, name='finalizarPedido'),
+
 
 
 

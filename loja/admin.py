@@ -70,8 +70,6 @@ class PedidoAdmin(admin.ModelAdmin):
     
     get_finalizado.short_description = 'Finalizado'
 
-
-
 class ItemPedidoAdmin(admin.ModelAdmin):
     list_display = ('pedido', 'itemEstoque', 'cor', 'quantidade', 'precoTotal')
     search_fields = ('pedido__id', 'itemEstoque__produto__nome', 'cor__nome')
@@ -93,3 +91,5 @@ admin.site.register(ItemEstoque, ItemEstoqueAdmin)
 admin.site.register(Banner, BannerAdmin)
 admin.site.register(Endereco, EnderecoAdmin)
 admin.site.register(Pedido, PedidoAdmin)
+admin.site.register(Pagamento)
+

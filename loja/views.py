@@ -10,7 +10,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.contrib.auth.decorators import login_required
 from datetime import *
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import reverse
 from .API_MercadoPago import *
 
 def homepage(request):
@@ -357,11 +357,19 @@ def finalizarPedido(request, idPedido):
             return render(request, "checkout.html", context)
         else:
             itensPedido = ItemPedido.objects.filter(pedido=pedido)
-            link = ""
-            criarPagamento(itensPedido, link)
-            return redirect("checkout")
+            link = request.build_absolute_uri(reverse('finalizar_pagamento'))
+            link_pagamento, id_pagamento = criarPagamento(itensPedido, link)
+            pagamento = Pagamento.objects.create(id_pagamento = id_pagamento, pedido=pedido)
+            pagamento.save()
+            return redirect(link_pagamento)
+
     else:
         return redirect("loja")
+
+def finalizar_pagamento(request):
+    print(request.GET.dict())
+    return redirect("loja")
+
 
 
 def adicionarEndereco(request):

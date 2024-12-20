@@ -35,3 +35,5 @@ def criarPagamento(itemPedido, link):
     print(f"ID do Pagamento: {id_pagamento}")
     print(f"Link de Pagamento: {link_pagamento}")
 
+    return link_pagamento, id_pagamento
+
