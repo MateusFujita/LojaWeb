@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from datetime import *
 from django.shortcuts import reverse
 from .API_MercadoPago import *
+from django.core.mail import send_mail
 
 def homepage(request):
     banners = Banner.objects.filter(ativo=True)
@@ -367,10 +368,32 @@ def finalizarPedido(request, idPedido):
         return redirect("loja")
 
 def finalizar_pagamento(request):
-    print(request.GET.dict())
-    return redirect("loja")
+    dados = request.GET.dict()
+    status = dados.get("status")
+    id_pagamento = dados.get("preference_id")
+    if status == "approved":
+        pagamento = Pagamento.objects.get(id_pagamento = id_pagamento)
+        pagamento.aprovado = True
+        pedido = pagamento.pedido
+        pedido.finalizado = True
+        pedido.dataFinalizacao = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        pedido.save()
+        pagamento.save()
+        enviarEmailCompra(pedido)
+        if request.user.is_authenticated:
+            return redirect("meusPedidos")
+        else:
+            return redirect("pedidoAprovado, pedido.id")
+    else:
+        return redirect("checkout")
 
 
+
+
+def pedidoAprovado(request, idPedido):
+    pedido = Pedido.objects.get(id = idPedido)
+    context = {"pedido":pedido}
+    return render(request, "pedidoAprovado.html")
 
 def adicionarEndereco(request):
     if request.user.is_authenticated:

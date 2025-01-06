@@ -20,6 +20,7 @@ def criarPagamento(itemPedido, link):
 
     preference_data = {
         "items": itens,
+        "auto_return": "all",
         "back_urls": {
             "success": link,
             "pending": link,

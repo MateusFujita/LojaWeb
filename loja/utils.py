@@ -1,5 +1,6 @@
 from django.db.models import Max, Min
 from django.db.models import Case, When
+from django.core.mail import send_mail
 
 def filtrarProdutos(produtos, filtro):
     if filtro:
@@ -44,3 +45,11 @@ def ordenarProdutos(produtos, ordem):
     return produtos
 
 
+def enviarEmailCompra(pedido):
+    email = pedido.cliente.email
+    assunto = f"Pedido Aprovado: {pedido.id}"
+    corpo = f""" Parabéns! Pedido aprovado"
+    ID PEDIDO: {pedido.id}
+    Valor Total: {pedido.precoTotal}"""
+    remetente = "mateusfujitaoficial@gmail.com"
+    send_mail(assunto,corpo,remetente,[email])
